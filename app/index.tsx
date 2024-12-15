@@ -27,32 +27,32 @@ export default function ChatScreen() {
   const toggleMenu = () => setMenuVisible(!menuVisible);
   const toggleAttachmentMenu = () => setAttachmentMenuVisible(!attachmentMenuVisible);
 
-  useEffect(()=>{
-    const fetchAss = async() => {
+  useEffect(() => {
+    const fetchAss = async () => {
       const response = await fetch("https://qa.corider.in/assignment/chat?page=0")
-      const data : ChatData = await response.json();
+      const data: ChatData = await response.json();
       setChat(data);
     }
     fetchAss();
-  },[])
+  }, [])
 
-/*   const renderAttachmentMenuItem = (icon : any, label : any) => (
-    <TouchableOpacity style={styles.attachmentMenuItem}>
-      <View style={styles.attachmentMenuItemIcon}>
-        <MaterialIcons name={icon} size={24} color="#fff" />
-      </View>
-      <Text style={styles.attachmentMenuItemText}>{label}</Text>
-    </TouchableOpacity>
-  ); */
+  /*   const renderAttachmentMenuItem = (icon : any, label : any) => (
+      <TouchableOpacity style={styles.attachmentMenuItem}>
+        <View style={styles.attachmentMenuItemIcon}>
+          <MaterialIcons name={icon} size={24} color="#fff" />
+        </View>
+        <Text style={styles.attachmentMenuItemText}>{label}</Text>
+      </TouchableOpacity>
+    ); */
 
   return (
     <SafeAreaView
-    style={[
-      styles.container,
-      {
-        paddingTop: isAndroid ? NativeStatusBar.currentHeight : 0,
-      },
-    ]}>
+      style={[
+        styles.container,
+        {
+          paddingTop: isAndroid ? NativeStatusBar.currentHeight : 0,
+        },
+      ]}>
       <StatusBar style="dark" />
 
       <View style={styles.header}>
@@ -63,7 +63,7 @@ export default function ChatScreen() {
           <Text style={styles.headerTitle}>{removeNo(chat?.name)}</Text>
         </View>
         <TouchableOpacity>
-        <Feather name="edit" size={24} color="black" />
+          <Feather name="edit" size={24} color="black" />
         </TouchableOpacity>
       </View>
 
@@ -85,17 +85,17 @@ export default function ChatScreen() {
         {menuVisible && (
           <View style={styles.menu}>
             <TouchableOpacity style={styles.menuItem}>
-            <Octicons name="people" size={24} color="black" />
+              <Octicons name="people" size={24} color="black" />
               <Text style={styles.menuText}>Members</Text>
             </TouchableOpacity>
-            <View style={{width:'100%' , height:0.5, backgroundColor: '#E5E5E0'}}></View>
+            <View style={{ width: '100%', height: 0.5, backgroundColor: '#E5E5E0' }}></View>
             <TouchableOpacity style={styles.menuItem}>
-            <Feather name="phone" size={22} color="black" />
+              <Feather name="phone" size={22} color="black" />
               <Text style={styles.menuText}>Share Number</Text>
             </TouchableOpacity>
-            <View style={{width:'100%' , height:0.5, backgroundColor: '#E5E5E0'}}></View>
+            <View style={{ width: '100%', height: 0.5, backgroundColor: '#E5E5E0' }}></View>
             <TouchableOpacity style={styles.menuItem}>
-            <Octicons name="report" size={22} color="black" />
+              <Octicons name="report" size={22} color="black" />
               <Text style={styles.menuText}>Report</Text>
             </TouchableOpacity>
           </View>
@@ -108,10 +108,10 @@ export default function ChatScreen() {
             key={message.id}
             style={[
               styles.messageContainer,
-              message.sender.self  ? styles.myMessage : styles.otherMessage
+              message.sender.self ? styles.myMessage : styles.otherMessage
             ]}
           >
-            {  !message.sender.self &&
+            {!message.sender.self &&
               <Image source={{ uri: message.sender.image }} style={styles.avatar} />
             }
             <View
@@ -122,7 +122,7 @@ export default function ChatScreen() {
             >
               <Text style={[
                 styles.messageText,
-                message.sender.self  ? styles.myMessageText : styles.otherMessageText
+                message.sender.self ? styles.myMessageText : styles.otherMessageText
               ]}>
                 {message.message}
               </Text>
@@ -139,28 +139,59 @@ export default function ChatScreen() {
           onChangeText={setInputText}
           multiline
         />
-        <TouchableOpacity onPress={toggleAttachmentMenu}>
+        <TouchableOpacity
+          onPress={toggleAttachmentMenu}
+          style={{
+            position: 'relative',
+          }}
+        >
           <MaterialIcons name="attach-file" size={24} color="black" style={styles.attachIcon} />
+          {attachmentMenuVisible && (
+            <View style={styles.attachmentMenu}>
+              <TouchableOpacity style={styles.actionButton}>
+                <Feather name="camera" size={24} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton}>
+                <Ionicons name="videocam-outline" size={24} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton}>
+                <MaterialCommunityIcons name="clipboard-text-play" size={24} color="white" />
+              </TouchableOpacity>
+
+              <View
+                style={{
+                  position: 'absolute',
+                  bottom: -10,
+                  right: 10,
+                  transform: [{
+                    rotate: '180deg',
+                  },
+                  {
+                    translateX: 42,
+                  },
+                  {
+                    translateY: 2,
+                  }],
+                  width: 0,
+                  height: 0,
+                  borderLeftWidth: 10,
+                  borderRightWidth: 10,
+                  borderBottomWidth: 10,
+                  borderLeftColor: 'transparent',
+                  borderRightColor: 'transparent',
+                  borderBottomColor: '#008000',
+                }}
+              >
+              </View>
+            </View>
+          )}
         </TouchableOpacity>
         <TouchableOpacity>
-        <Feather name="send" size={24} color="black" style={styles.sendIcon} />
+          <Feather name="send" size={24} color="black" style={styles.sendIcon} />
         </TouchableOpacity>
       </View>
 
-      {attachmentMenuVisible && (
-        <View style={styles.attachmentMenu}>
-        <TouchableOpacity style={styles.actionButton}>
-        <Feather name="camera" size={24} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-        <Ionicons name="videocam-outline" size={24} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-        <MaterialCommunityIcons name="clipboard-text-play" size={24} color="white" />
-        </TouchableOpacity>
-        </View>
-      )}
-      
+
     </SafeAreaView>
   );
 }
@@ -212,7 +243,7 @@ const styles = StyleSheet.create({
   },
   tripDestination: {
     color: '#000',
-    fontSize : 16,
+    fontSize: 16,
     fontWeight: '500',
   },
   menu: {
@@ -226,7 +257,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    zIndex : 1
+    zIndex: 1
   },
   menuItem: {
     flexDirection: 'row',
@@ -256,7 +287,7 @@ const styles = StyleSheet.create({
   messageContainer: {
     flexDirection: 'row',
     marginBottom: 16,
-    paddingBottom : 6,
+    paddingBottom: 6,
     alignItems: 'flex-start',
   },
   myMessage: {
@@ -307,7 +338,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '135deg' }],
   },
   sendIcon: {
-    transform: [{rotate: '45deg'}]
+    transform: [{ rotate: '45deg' }]
   },
   input: {
     flex: 1,
@@ -327,41 +358,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  attachmentMenu: {  
+  attachmentMenu: {
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 65,
-    right: 16,
+    top: -80,
+    right: 0,
+    transform: [{ translateX: 45 }],
     backgroundColor: '#008000',
     borderRadius: 25,
     paddingHorizontal: 12,
     paddingVertical: 4,
+    width: 130,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     zIndex: 1000,
-  },
-  attachmentMenuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  attachmentMenuItemIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#1a73e8',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 14,
-  },
-  attachmentMenuItemText: {
-    fontSize: 16,
-    color: '#000',
   },
 });
 
