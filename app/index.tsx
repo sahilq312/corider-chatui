@@ -9,7 +9,11 @@ import {
   Image,
   ScrollView,
   Platform,
-  StatusBar as NativeStatusBar
+  StatusBar as NativeStatusBar,
+  Button,
+  FlatList,
+  Pressable,
+  ActivityIndicator
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
@@ -19,32 +23,66 @@ import { removeNo } from '@/lib/header-text';
 
 export default function ChatScreen() {
   const isAndroid = useMemo(() => Platform.OS === "android", []);
-  const [chat, setChat] = useState<ChatData | null>(null);
+  const [chat, setChat] = useState<Chat[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState<number>(0);
+  const [inputText, setInputText] = useState("");
   const [menuVisible, setMenuVisible] = useState(false);
-  const [inputText, setInputText] = useState('');
   const [attachmentMenuVisible, setAttachmentMenuVisible] = useState(false);
 
   const toggleMenu = () => setMenuVisible(!menuVisible);
   const toggleAttachmentMenu = () => setAttachmentMenuVisible(!attachmentMenuVisible);
 
-  useEffect(() => {
-    const fetchAss = async () => {
-      const response = await fetch("https://qa.corider.in/assignment/chat?page=0")
+  const fetchChatData = async (page: number) => {
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`https://qa.corider.in/assignment/chat?page=${page}`);
       const data: ChatData = await response.json();
-      setChat(data);
+      console.log(page)
+      const chats = data.chats.reverse();
+      setChat((prevChat) => [...prevChat, ...chats]); 
+      setPage((prevPage) => prevPage + 1); 
+    } catch (error) {
+      console.warn("Error fetching chats:", error);
+    } finally {
+      setLoading(false);
     }
-    fetchAss();
-  }, [])
+  };
+  
+  useEffect(() => {
+    if(page === 0) fetchChatData(page);
+  }, []);
 
-  /*   const renderAttachmentMenuItem = (icon : any, label : any) => (
-      <TouchableOpacity style={styles.attachmentMenuItem}>
-        <View style={styles.attachmentMenuItemIcon}>
-          <MaterialIcons name={icon} size={24} color="#fff" />
-        </View>
-        <Text style={styles.attachmentMenuItemText}>{label}</Text>
-      </TouchableOpacity>
-    ); */
 
+  const renderItem = ({ item }: { item: Chat }) => (
+    <View
+      style={[
+        styles.messageContainer,
+        item.sender.self ? styles.myMessage : styles.otherMessage,
+      ]}
+    >
+      {!item.sender.self && <Image source={{ uri: item.sender.image }} style={styles.avatar} />}
+      <View
+        style={[
+          styles.messageBubble,
+          item.sender.self ? styles.myBubble : styles.otherBubble,
+        ]}
+      >
+        <Text
+          style={[
+            styles.messageText,
+            item.sender.self ? styles.myMessageText : styles.otherMessageText,
+          ]}
+        >
+          {item.message}
+        </Text>
+      </View>
+    </View>
+  )
+  
+  
   return (
     <SafeAreaView
       style={[
@@ -60,7 +98,7 @@ export default function ChatScreen() {
           <TouchableOpacity>
             <Ionicons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{removeNo(chat?.name)}</Text>
+          <Text style={styles.headerTitle}>Ride 93</Text>
         </View>
         <TouchableOpacity>
           <Feather name="edit" size={24} color="black" />
@@ -74,8 +112,8 @@ export default function ChatScreen() {
             style={styles.tripAvatar}
           />
           <View style={styles.tripText}>
-            <Text style={styles.tripLabel}>From <Text style={styles.tripDestination}>{chat?.from}</Text></Text>
-            <Text style={styles.tripLabel}>To <Text style={styles.tripDestination}>{chat?.to}</Text></Text>
+            <Text style={styles.tripLabel}>From <Text style={styles.tripDestination}>IGI Airport, T3</Text></Text>
+            <Text style={styles.tripLabel}>To <Text style={styles.tripDestination}>Sector 28</Text></Text>
           </View>
           <TouchableOpacity onPress={toggleMenu}>
             <MaterialIcons name="more-vert" size={24} color="#000" />
@@ -101,36 +139,23 @@ export default function ChatScreen() {
           </View>
         )}
       </View>
-
-      <ScrollView style={styles.chatContainer}>
-        {chat?.chats.map((message) => (
-          <View
-            key={message.id}
-            style={[
-              styles.messageContainer,
-              message.sender.self ? styles.myMessage : styles.otherMessage
-            ]}
-          >
-            {!message.sender.self &&
-              <Image source={{ uri: message.sender.image }} style={styles.avatar} />
-            }
-            <View
-              style={[
-                styles.messageBubble,
-                message.sender.self ? styles.myBubble : styles.otherBubble
-              ]}
-            >
-              <Text style={[
-                styles.messageText,
-                message.sender.self ? styles.myMessageText : styles.otherMessageText
-              ]}>
-                {message.message}
-              </Text>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-
+        <View style={{flex : 1}}>
+        <FlatList
+       data={chat}
+      renderItem={renderItem}
+      keyExtractor={(item, index) => `${item.id}-${index}`} 
+      contentContainerStyle={[styles.chatContainer]}  
+     onEndReached={() => !loading && fetchChatData(page)}
+     onEndReachedThreshold={1}
+     nestedScrollEnabled={true}
+    ListFooterComponent={
+    loading ? (
+      <ActivityIndicator size="small" color="#000" style={{ marginVertical: 10 }} />
+    ) : null
+  }
+  inverted={true}
+/>
+        </View>
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -200,6 +225,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  loadButton: {
+    padding: 10,
+    alignItems: 'center',
+    backgroundColor: '#1C63D5',
+    margin: 16,
+    borderRadius: 8,
+  },
+  loadButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',
@@ -281,7 +318,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   chatContainer: {
-    flex: 1,
     padding: 16,
   },
   messageContainer: {
