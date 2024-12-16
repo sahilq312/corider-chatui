@@ -146,7 +146,7 @@ export default function ChatScreen() {
       keyExtractor={(item, index) => `${item.id}-${index}`} 
       contentContainerStyle={[styles.chatContainer]}  
      onEndReached={() => !loading && fetchChatData(page)}
-     onEndReachedThreshold={1}
+     /* onEndReachedThreshold={1} */
      nestedScrollEnabled={true}
     ListFooterComponent={
     loading ? (
